@@ -1,6 +1,10 @@
 # endpoints-escape
 Drop Go endpoints 1.0 with the least amount of effort.
 
+Note: This was created for a project of mine and quickly dumped into a repo so a friend could use it. No guarantees or warranty regarding completion or functionality of the code.
+
+Usage:
+
 Add a method to your service struct with the path prefix you may have had before.
 
 ```
