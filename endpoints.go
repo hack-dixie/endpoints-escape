@@ -3,14 +3,14 @@ package endpoints
 import (
 	"bytes"
 	"encoding/json"
-	"golang.org/x/net/context"
-	"google.golang.org/appengine"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"reflect"
 
+	"golang.org/x/net/context"
+	"google.golang.org/appengine"
 	applog "google.golang.org/appengine/log"
 )
 
@@ -92,20 +92,40 @@ func EndpointHandlerWrapper(service interface{}, name string) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		if r.Method != http.MethodPost {
+		var body []byte
+
+		switch r.Method {
+		case http.MethodPost:
+			// read in the request
+			b, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				logAlwaysNoContext(r, "readall")
+				return
+			}
+			if err := r.Body.Close(); err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				logAlwaysNoContext(r, "close")
+				return
+			}
+			body = b
+		case http.MethodGet:
+			r.ParseForm()
+			vals := make(map[string]string)
+			for k, v := range r.Form {
+				if len(v) > 0 {
+					vals[k] = v[0]
+				}
+			}
+			b, err := json.Marshal(vals)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				logAlwaysNoContext(r, "Can't marshal req.Form")
+				return
+			}
+			body = b
+		default:
 			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		// read in the request
-		body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			logAlwaysNoContext(r, "readall")
-			return
-		}
-		if err := r.Body.Close(); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			logAlwaysNoContext(r, "close")
 			return
 		}
 
