@@ -95,7 +95,7 @@ func EndpointHandlerWrapper(service interface{}, name string) http.HandlerFunc {
 		var body []byte
 
 		switch r.Method {
-		case http.MethodPost:
+		case http.MethodPost, http.MethodPut:
 			// read in the request
 			b, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 			if err != nil {
