@@ -2,16 +2,13 @@ package endpoints
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"reflect"
-
-	"golang.org/x/net/context"
-	"google.golang.org/appengine"
-	applog "google.golang.org/appengine/log"
 )
 
 // contextKey is used to store values on a context.
@@ -25,18 +22,11 @@ const (
 )
 
 func logAlways(c context.Context, m string, v ...interface{}) {
-	if c != nil {
-		applog.Debugf(c, m, v...)
-	}
+	log.Printf(m, v...)
 }
 
 func logAlwaysNoContext(r *http.Request, m string, v ...interface{}) {
-	if r != nil {
-		c := appengine.NewContext(r)
-		if c != nil {
-			applog.Debugf(c, m, v...)
-		}
-	}
+	logAlways(nil, m, v)
 }
 
 type VoidMessage struct {
@@ -52,7 +42,7 @@ func HTTPRequest(c context.Context) *http.Request {
 
 // NewContext returns a new context for an in-flight API (HTTP) request.
 func NewContext(r *http.Request) context.Context {
-	c := appengine.NewContext(r)
+	c := context.Background()
 	c = context.WithValue(c, requestKey, r)
 	return c
 }
