@@ -9,6 +9,8 @@ import (
 	"log"
 	"net/http"
 	"reflect"
+
+	"google.golang.org/appengine"
 )
 
 // contextKey is used to store values on a context.
@@ -42,7 +44,7 @@ func HTTPRequest(c context.Context) *http.Request {
 
 // NewContext returns a new context for an in-flight API (HTTP) request.
 func NewContext(r *http.Request) context.Context {
-	c := context.Background()
+	c := appengine.NewContext(r)
 	c = context.WithValue(c, requestKey, r)
 	return c
 }
